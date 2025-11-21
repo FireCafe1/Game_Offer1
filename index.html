@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<link rel="shortcut icon" href="download (1).jpeg" type="image/x-icon">
+<meta name="author" content="Youssef & Mohamed Ali" />
+<title>اكسب خصمك ☕🎁 — لعبة الحظ (نهائي)</title>
+<style>
+:root{
+  --bg1:#071330; --bg2:#072b54; --accent:#38b6ff; --muted:#9bb8d6;
+  --card: rgba(255,255,255,0.04);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:"Cairo",sans-serif; background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:#e6f3ff; display:flex;align-items:center;justify-content:center;padding:18px;
+  -webkit-tap-highlight-color: transparent;
+}
+.app{width:100%;max-width:980px;border-radius:14px;padding:14px;position:relative;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow: 0 14px 50px rgba(2,6,23,0.7);overflow:hidden;}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 8px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#1e40af);display:flex;align-items:center;justify-content:center;font-weight:900;color:#021124;font-size:22px}
+h1{margin:0;font-size:18px}
+p.lead{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+.hud{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px}
+.stats{display:flex;gap:10px;align-items:center}
+.stat{background:var(--card);padding:10px;border-radius:10px;min-width:110px;text-align:center}
+.stat .num{font-size:20px;font-weight:900;color:var(--accent)}
+.controls{display:flex;gap:8px;align-items:center}
+.btn{background:linear-gradient(135deg,var(--accent),#1e40af);color:#021124;padding:10px 14px;border-radius:10px;border:0;font-weight:800;cursor:pointer;transition:transform 0.1s}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+.btn:disabled{opacity:0.6;cursor:not-allowed}
+.game-board{position:relative;height:62vh;min-height:420px;border-radius:12px;overflow:hidden;margin-top:8px;
+  border:1px solid rgba(255,255,255,0.03);background:
+  radial-gradient(1200px 400px at 10% 10%, rgba(56,182,255,0.04), transparent),
+  radial-gradient(800px 300px at 90% 80%, rgba(30,64,175,0.03), transparent);
+  touch-action: none; user-select:none;
+}
+/* ... باقي الستايلات ... */
+
+/* استعلام وسائط للأجهزة اللوحية/المتوسطة (أقل من 768 بكسل) */
+@media (max-width: 768px) {
+    .app {
+        padding: 10px; /* تقليل المسافة المحيطة */
+    }
+    .hud {
+        flex-direction: column; /* ترتيب شريط المعلومات عمودياً */
+        align-items: stretch;
+    }
+    .stats {
+        width: 100%; /* جعل الإحصائيات تأخذ العرض الكامل */
+        justify-content: space-between; /* توزيع متساوٍ بين الإحصائيات */
+    }
+    .stat {
+        min-width: unset; /* إزالة الحد الأدنى للعرض */
+        flex-grow: 1; /* السماح لهم بالتوسع بشكل متساوٍ */
+    }
+    *{
+      overflow: auto;
+      height: auto;
+    }
+}
+
+/* استعلام وسائط للهواتف الذكية (أقل من 520 بكسل) - الحالي مع تعديل */
+@media (max-width: 520px){
+    .brand {
+        gap: 8px; /* تقليل المسافة بين اللوجو والنص */
+    }
+    .logo {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+    h1 {
+        font-size: 16px;
+    }
+    p.lead {
+        font-size: 12px;
+    }
+    .wheel-frame{width:300px;height:300px} /* للحفاظ على حجم العجلة */
+    #pointer{top:-16px;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:20px solid red}
+    *{
+      overflow: auto;
+      height: auto;
+    }
+}
+
+/* استعلام وسائط للهواتف الصغيرة جداً (أقل من 400 بكسل) */
+@media (max-width: 400px) {
+    .stats {
+        flex-wrap: wrap; /* السماح للإحصائيات بالنزول لسطر جديد */
+        gap: 8px; /* تقليل المسافة بين عناصر الإحصاء */
+    }
+    .stat {
+        flex-basis: calc(50% - 4px); /* جعل كل عنصرين يأخذان نصف العرض تقريباً */
+    }
+    .wheel-frame{width:260px;height:260px} /* تقليل حجم العجلة أكثر */
+    *{
+      overflow: auto;
+
+    }
+}
+.item{position:absolute; top:0; font-size:40px; cursor:pointer; user-select:none; text-shadow:0 6px 18px rgba(0,0,0,0.5); padding:6px; pointer-events:auto;}
+.overlay-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.msgbox{pointer-events:auto;background:rgba(2,6,23,0.75);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);text-align:center;min-width:260px}
+
+.wheel-wrap{display:none;flex-direction:column;align-items:center;justify-content:center;padding:12px;min-height:60vh}
+.wheel-frame{position:relative;width:400px;height:400px}
+#pointer{position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:25px solid red;z-index:10}
+.wheel{width:100%;height:100%;border-radius:50%;background:#fff;overflow:hidden;border:8px solid #ffd700}
+.wheel svg{width:100%;height:100%;transform-origin:50% 50%;transition:transform 5s cubic-bezier(.2,.9,.2,1)}
+.wheel svg text{fill:#021124;font-weight:700;font-size:14px}
+
+.prize-popup{display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:9999}
+.prize-inner{background:linear-gradient(180deg,#fff,#f0f9ff);color:#021124;padding:20px;border-radius:12px;max-width:360px;text-align:center;border:3px solid #0088ff}
+.prize-inner h3{margin:0 0 6px}
+.prize-inner .muted{color:#536b82;font-size:13px;margin-top:8px}
+.closeX{position:absolute;right:10px;top:10px;cursor:pointer;color:#00223a;font-weight:900}
+
+@media (max-width:520px){
+  .wheel-frame{width:300px;height:300px}
+  #pointer{top:-16px;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:20px solid red}
+  *{
+      overflow: auto;
+    }
+}
+</style>
+</head>
+<body>
+<div class="app" id="gameContainer">
+  <!-- <header>
+    <div class="brand">
+      <div class="logo">GO</div>
+      <div>
+        <h1>اكسب خصمك ☕🎁</h1>
+        <p class="lead">اضغط ابدأ مرة واحدة — الهدف: 200 نقطة لتدور عجلة الحظ.</p>
+      </div>
+    </div>
+    <div style="text-align:left"><div class="muted">لعبة الحظ</div></div>
+  </header> -->
+
+  <div class="hud">
+    <div class="stats">
+      <div class="stat"><div class="muted">النقاط</div><div id="score" class="num">0</div></div>
+      <div class="stat"><div class="muted">أعلى</div><div id="best" class="num">0</div></div>
+      <div class="stat"><div class="muted">هدف</div><div id="target" class="num">200</div></div>
+    </div>
+    <div class="controls">
+      <button id="startBtn" class="btn">ابدأ</button>
+    </div>
+  </div>
+
+  <div id="board" class="game-board" aria-live="polite" aria-label="ساحة اللعب">
+    <div class="overlay-msg" style="display:none">
+      <div class="msgbox"><strong id="overlayTitle">جاهز؟</strong><div id="overlayText" class="muted">اضغط ابدأ للبدء — تجنب العناصر الحمراء!</div></div>
+    </div>
+  </div>
+</div>
+
+<section id="wheelSection" style="display:none;flex-direction:column;align-items:center;justify-content:center;">
+  <h2 style="color:white;font-size:22px;margin-bottom:10px;">🎡 عجلة الحظ 🎡</h2>
+  <div class="wheel-frame">
+    <div id="pointer"></div>
+    <div class="wheel">
+      <svg id="wheelSvg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+  </div>
+  <div style="margin-top:12px">
+    <button id="spinBtn" class="btn">دور العجلة</button>
+  </div>
+</section>
+
+<div id="prizePopup" class="prize-popup" aria-hidden="true">
+  <div class="prize-inner">
+    <div class="closeX" id="closePopup">✕</div>
+    <h3 id="prizeTitle">🎉 مبروك!</h3>
+    <div id="prizeText" style="margin:6px 0;font-weight:700"></div>
+    <div id="prizeTime" class="muted"></div>
+    <div style="margin-top:15px; font-weight:800; color:#0056b3; font-size:16px; border-top:1px dashed #c0c0c0; padding-top:12px;">
+      روح وريها الكاشير علشان تكسب جيزاتك
+    </div>
+    <div style="margin-top:12px"><button id="closeBtn" class="btn">إغلاق</button></div>
+  </div>
+</div>
+
+<script>
+/* ===== إعداد اللعبة والعجلة - نسخة نهائية جاهزة ===== */
+const TARGET = 200;
+const POS = 10, NEU = 5, NEG = 50;
+const SPAWN_INTERVAL = 250;
+const FALL_DURATION = 1000;
+
+const GOOD = ['☕','🥤',];
+const NEUT = ['🍪','🍩'];
+const BAD  = ['💣','🕷️','🛢️','🔥','⚠','💥','❌'];
+
+// الجوائز المطلوبة بالترتيب اللي طلبته
+const PRIZES = [
+  { name: "خصم 5%" },
+  { name: "خصم 10%" },
+  { name: "وافل" },
+  { name: "قهوة" },
+  { name: "حظ أوفر المرة القادمة" }
+];
+
+// 🔥 متغيرات القفل الجديدة
+const COOL_DOWN_HOURS = 6; // مدة القفل المطلوبة: 6 ساعات
+const LOCK_KEY = 'game_cooldown_end'; // مفتاح تخزين وقت انتهاء القفل في localStorage
+
+const board = document.getElementById('board');
+const startBtn = document.getElementById('startBtn');
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+const wheelSection = document.getElementById('wheelSection');
+const wheelSvg = document.getElementById('wheelSvg');
+const spinBtn = document.getElementById('spinBtn');
+const prizePopup = document.getElementById('prizePopup');
+const prizeTitle = document.getElementById('prizeTitle');
+const prizeText = document.getElementById('prizeText');
+const prizeTimeEl = document.getElementById('prizeTime');
+const closePopup = document.getElementById('closePopup');
+const closeBtn = document.getElementById('closeBtn');
+
+// 🔥 عنصر رسالة "جاهز؟" الأصلية
+const overlayMsg = document.querySelector('.overlay-msg');
+
+// 🔥 إضافة عنصر رسالة القفل الجديدة (مخفية مبدئياً)
+const lockMessage = document.createElement('div');
+lockMessage.className = 'overlay-msg';
+lockMessage.style.display = 'none';
+lockMessage.innerHTML = `
+    <div class="msgbox" style="padding: 30px; border: 2px solid #ff4747;">
+        <strong id="lockTitle" style="font-size: 24px;">🚫 اللعبة مقفلة مؤقتاً</strong>
+        <div class="muted" style="margin-top: 10px; font-size: 16px;">
+            لقد أنهيت دورة اللعب الخاصة بك. يرجى الانتظار:
+        </div>
+        <h2 id="lockCountdown" style="color: #ff4747; margin: 15px 0;">--h --m --s</h2>
+    </div>
+`;
+board.appendChild(lockMessage); // إضافتها لساحة اللعب
+
+let countdownInterval = null; // متغير للتحكم في العد التنازلي
+
+let score = 0;
+let best = parseInt(localStorage.getItem('game_best') || '0');
+let running = false;
+let spawnInterval = null;
+let isSpinning = false;
+
+scoreEl.textContent = score;
+bestEl.textContent = best;
+document.getElementById('target').textContent = TARGET;
+
+/* تحديث النقاط */
+function updateScore() {
+  scoreEl.textContent = score;
+  if (score > best) {
+    best = score;
+    bestEl.textContent = best;
+    localStorage.setItem('game_best', String(best));
+  }
+}
+
+/* إنشاء عنصر يسقط */
+function spawnItem() {
+  if (!running) return;
+  const rect = board.getBoundingClientRect();
+  const r = Math.random();
+  const badChance = Math.min(0.45, 0.12 + (score / TARGET) * 0.9);
+  let char, type;
+  if (r < badChance) { char = BAD[Math.floor(Math.random() * BAD.length)]; type = 'bad'; }
+  else if (r < badChance + 0.12) { char = NEUT[Math.floor(Math.random() * NEUT.length)]; type = 'neutral'; }
+  else { char = GOOD[Math.floor(Math.random() * GOOD.length)]; type = 'good'; }
+
+  const el = document.createElement('div');
+  el.className = 'item';
+  el.textContent = char;
+  el.style.left = Math.max(6, Math.random() * (rect.width - 50)) + 'px';
+  el.style.top = '-60px';
+  el.style.fontSize = (28 + Math.floor(Math.random() * 30)) + 'px';
+  board.appendChild(el);
+
+  const distance = rect.height + 80;
+  const dur = FALL_DURATION + Math.random() * 1200;
+  const anim = el.animate([
+    { transform: 'translateY(0)' },
+    { transform: `translateY(${distance}px)` }
+  ], { duration: dur, easing: 'linear' });
+
+  anim.onfinish = () => { if (el.parentNode) el.remove(); };
+
+  function handleTap(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!running) return;
+    anim.cancel();
+    if (el.parentNode) el.remove();
+    if (type === 'bad') { score = Math.max(0, score - NEG); }
+    else if (type === 'neutral') { score += NEU; }
+    else { score += POS; }
+    updateScore();
+    if (score >= TARGET) winGame();
+  }
+
+  el.addEventListener('click', handleTap, { passive: false });
+  el.addEventListener('touchstart', handleTap, { passive: false });
+}
+
+/* بدء اللعبة */
+function startGame() {
+  // 🔥 منع البدء إذا كانت مقفلة
+  if (running || startBtn.disabled) return;
+  running = true;
+  score = 0; updateScore();
+  startBtn.disabled = true;
+  // 🔥 إخفاء رسالة "جاهز؟" الأصلية عند البدء
+  overlayMsg.style.display = 'none';
+  spawnInterval = setInterval(spawnItem, SPAWN_INTERVAL);
+  spawnItem();
+}
+startBtn.addEventListener('click', startGame);
+
+/* عند الفوز */
+function winGame() {
+  running = false;
+  if (spawnInterval) { clearInterval(spawnInterval); spawnInterval = null; }
+  board.querySelectorAll('.item').forEach(x => x.remove());
+  document.getElementById('gameContainer').style.display = 'none';
+  wheelSection.style.display = 'flex';
+  drawWheel();
+}
+
+/* رسم العجلة */
+function drawWheel() {
+  const seg = PRIZES.length;
+  const slice = 360 / seg;
+  const R = 200;
+  wheelSvg.innerHTML = '';
+  const colors = ['#ffc107', '#e91e63', '#4caf50', '#ff9800', '#9c27b0'];
+  let current = 0;
+  PRIZES.forEach((p, i) => {
+    const start = i * slice;
+    const end = (i + 1) * slice;
+    const sx = R + R * Math.cos(Math.PI * (start - 90) / 180);
+    const sy = R + R * Math.sin(Math.PI * (start - 90) / 180);
+    const ex = R + R * Math.cos(Math.PI * (end - 90) / 180);
+    const ey = R + R * Math.sin(Math.PI * (end - 90) / 180);
+    const path = `M${R},${R} L${sx},${sy} A${R},${R} 0 0,1 ${ex},${ey} Z`;
+    const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pathEl.setAttribute('d', path);
+    pathEl.setAttribute('fill', colors[i % colors.length]);
+    pathEl.setAttribute('stroke', '#072b54');
+    pathEl.setAttribute('stroke-width', '1');
+    wheelSvg.appendChild(pathEl);
+
+    const angle = start + slice / 2;
+    const tx = R + R * 0.6 * Math.cos(Math.PI * (angle - 90) / 180);
+    const ty = R + R * 0.6 * Math.sin(Math.PI * (angle - 90) / 180);
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', tx);
+    text.setAttribute('y', ty);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('transform', `rotate(${angle + 90},${tx},${ty})`);
+    text.textContent = p.name;
+    wheelSvg.appendChild(text);
+    current += slice;
+  });
+}
+
+/* دوران العجلة (الإصدار المصحح) */
+spinBtn.addEventListener('click', function () {
+  if (isSpinning) return;
+  isSpinning = true;
+
+  const seg = PRIZES.length;
+  const selectedIndex = Math.floor(Math.random() * seg);
+  const slice = 360 / seg;
+
+  const midAngle = selectedIndex * slice + slice / 2;
+  const extra = 360 * 6; // عدد اللفات
+  const rotation = extra + (360 - midAngle);
+
+  wheelSvg.style.transition = 'transform 5s cubic-bezier(.2,.9,.2,1)';
+  wheelSvg.style.transform = `rotate(${rotation}deg)`;
+
+  setTimeout(() => {
+    isSpinning = false;
+    showPrize(PRIZES[selectedIndex]);
+  }, 5200);
+});
+
+/* عرض الجائزة + الوقت */
+function showPrize(prize) {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'numeric', day: 'numeric' });
+  const timeStr = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  prizePopup.style.display = 'flex';
+  prizePopup.setAttribute('aria-hidden', 'false');
+  prizeTitle.textContent = prize.name === 'حظ أوفر المرة القادمة' ? 'حظ أوفر!' : '🎉 مبروك!';
+  prizeText.textContent = prize.name === 'حظ أوفر المرة القادمة' ? 'حاول مرة تانية في الجولة القادمة.' : `كسبت: ${prize.name}`;
+  prizeTimeEl.textContent = `التاريخ: ${dateStr} — الوقت: ${timeStr}`;
+}
+
+// --------------------------------------------------------------------------------
+
+/* ===== دوال القفل والعد التنازلي (Cooldown Logic) ===== */
+
+/**
+ * دالة لتحويل فرق الوقت بالملي ثانية إلى صيغة ساعة:دقيقة:ثانية
+ * @param {number} ms - فرق الوقت بالملي ثانية
+ * @returns {string} - الوقت المتبقي (h:m:s)
+ */
+function formatRemainingTime(ms) {
+    if (ms <= 0) return '00h 00m 00s';
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    const h = String(hours).padStart(2, '0');
+    const m = String(minutes).padStart(2, '0');
+    const s = String(seconds).padStart(2, '0');
+    
+    return `${h}h ${m}m ${s}s`;
+}
+
+/**
+ * تحديث العد التنازلي للقفل
+ */
+function updateCountdown() {
+    const unlockTime = parseInt(localStorage.getItem(LOCK_KEY) || '0');
+    const remainingMs = unlockTime - new Date().getTime();
+    const countdownEl = document.getElementById('lockCountdown');
+
+    if (remainingMs <= 0) {
+        // انتهى العد التنازلي
+        if (countdownInterval) clearInterval(countdownInterval);
+        countdownInterval = null;
+        localStorage.removeItem(LOCK_KEY);
+        lockMessage.style.display = 'none';
+        
+        // 🔥 اللعبة مفتوحة الآن، أظهر رسالة "جاهز؟"
+        document.getElementById('gameContainer').style.display = 'block';
+        overlayMsg.style.display = 'flex'; 
+        startBtn.disabled = false;
+        return;
+    }
+
+    // تحديث النص وعرض رسالة القفل
+    countdownEl.textContent = formatRemainingTime(remainingMs);
+    lockMessage.style.display = 'flex';
+    document.getElementById('gameContainer').style.display = 'block'; 
+    overlayMsg.style.display = 'none'; // إخفاء رسالة "جاهز؟"
+    startBtn.disabled = true;
+}
+
+/**
+ * فحص حالة القفل وبدء العد التنازلي إذا لزم الأمر
+ */
+function checkGameLock() {
+    const unlockTime = parseInt(localStorage.getItem(LOCK_KEY) || '0');
+    const now = new Date().getTime();
+
+    if (unlockTime > now) {
+        // اللعبة مقفلة
+        document.getElementById('gameContainer').style.display = 'block';
+        wheelSection.style.display = 'none';
+        
+        // بدء العد التنازلي
+        if (countdownInterval) clearInterval(countdownInterval);
+        updateCountdown(); // تحديث فوري
+        countdownInterval = setInterval(updateCountdown, 1000); // تحديث كل ثانية
+    } else {
+        // اللعبة مفتوحة
+        if (countdownInterval) clearInterval(countdownInterval);
+        lockMessage.style.display = 'none';
+        document.getElementById('gameContainer').style.display = 'block';
+        overlayMsg.style.display = 'flex';
+        startBtn.disabled = false;
+    }
+}
+
+
+/* إغلاق نافذة الجائزة والتبديل إلى وضع القفل (منقح) */
+function hidePrizePopup(){
+    prizePopup.style.display = 'none';
+    prizePopup.setAttribute('aria-hidden','true');
+    
+    wheelSection.style.display = 'none';
+    
+    // إعادة ضبط دوران العجلة
+    wheelSvg.style.transition = 'none';
+    wheelSvg.style.transform = 'rotate(0deg)';
+
+    // 🔥 عند إغلاق النافذة بعد الفوز، نقوم بتعيين وقت انتهاء القفل (6 ساعات)
+    // const cooldownDuration = COOL_DOWN_HOURS * 60 * 60 * 1000; 
+    // const unlockTime = new Date().getTime() + cooldownDuration;
+    // localStorage.setItem(LOCK_KEY, String(unlockTime));
+    
+    // reset score & allow start again
+    score = 0;
+    updateScore();
+    
+    // بدء التحقق والقفل
+    checkGameLock();
+}
+closePopup.addEventListener('click', hidePrizePopup);
+closeBtn.addEventListener('click', hidePrizePopup);
+
+/* أمان: لو خرجت من الصفحة أو كررت متعدداً - تنظيف */
+window.addEventListener('beforeunload', ()=> {
+    if(spawnInterval) clearInterval(spawnInterval);
+    if(countdownInterval) clearInterval(countdownInterval); // تنظيف مؤقت العد التنازلي
+});
+
+// --------------------------------------------------------------------------------
+
+// [منقح] يجب فحص حالة القفل عند تحميل الصفحة
+window.onload = function() {
+    checkGameLock(); // فحص القفل فور تحميل الصفحة
+};
+
+// **ملاحظة:** تم إزالة دالة updateClock التي كانت لا علاقة لها بمنطق اللعبة الرئيسية أو القفل.
+
+</script>
+</body>
+</html>
