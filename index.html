@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<link rel="shortcut icon" href="download (1).jpeg" type="image/x-icon">
+<link rel="shortcut icon" href="download_1_-removebg-preview.png" type="image/x-icon">
 <meta name="author" content="Youssef & Mohamed Ali" />
 <title>اكسب خصمك ☕🎁 — لعبة الحظ (نهائي)</title>
 <style>
@@ -498,9 +498,9 @@ function hidePrizePopup(){
     wheelSvg.style.transform = 'rotate(0deg)';
 
     // 🔥 عند إغلاق النافذة بعد الفوز، نقوم بتعيين وقت انتهاء القفل (6 ساعات)
-    // const cooldownDuration = COOL_DOWN_HOURS * 60 * 60 * 1000; 
-    // const unlockTime = new Date().getTime() + cooldownDuration;
-    // localStorage.setItem(LOCK_KEY, String(unlockTime));
+    const cooldownDuration = COOL_DOWN_HOURS * 60 * 60 * 1000; 
+    const unlockTime = new Date().getTime() + cooldownDuration;
+    localStorage.setItem(LOCK_KEY, String(unlockTime));
     
     // reset score & allow start again
     score = 0;
@@ -529,4 +529,5 @@ window.onload = function() {
 
 </script>
 </body>
+
 </html>
